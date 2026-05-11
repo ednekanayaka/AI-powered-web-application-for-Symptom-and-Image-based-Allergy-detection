@@ -1,0 +1,357 @@
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dashboard-overview,
+.stat-card,
+.profile-card,
+.checkin-card,
+.chart-container,
+.reminders-container,
+.log-history-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.dashboard-overview {
+  padding: 24px 26px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.dashboard-overview h3 {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.dashboard-overview p {
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.dashboard-overview-meta {
+  display: grid;
+  gap: 12px;
+  min-width: 280px;
+}
+
+.dashboard-overview-meta div {
+  padding: 16px;
+  background: var(--bg-panel-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.dashboard-overview-meta span,
+.stat-label,
+.profile-card-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dashboard-overview-meta strong,
+.profile-card strong {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.dashboard-stats,
+.dashboard-profile {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.stat-card,
+.profile-card {
+  padding: 22px;
+}
+
+.stat-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.stat-header h3 {
+  font-size: 16px;
+}
+
+.stat-icon {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.stat-value {
+  font-size: 30px;
+  line-height: 1.1;
+}
+
+.checkin-card,
+.chart-container,
+.reminders-container {
+  padding: 24px;
+}
+
+.checkin-header,
+.chart-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.checkin-header h3,
+.chart-header h3,
+.log-history-header h3 {
+  font-size: 20px;
+  margin-bottom: 6px;
+}
+
+.chart-header p,
+.log-history-header p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.checkin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.checkin-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.checkin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+}
+
+.checkin-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.checkin-result.success {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.checkin-result.error {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.log-history-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.log-history-count {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-panel-muted);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.log-history-table-wrap {
+  overflow-x: auto;
+}
+
+.log-history-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.log-history-table th,
+.log-history-table td {
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.log-history-table th {
+  background: var(--bg-panel-muted);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.log-history-table td {
+  color: var(--text-secondary);
+}
+
+.log-history-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.log-history-table tbody tr:hover td {
+  background: var(--bg-panel-muted);
+}
+
+.log-time {
+  color: var(--text-muted);
+}
+
+.bmi-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.bmi-under {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.bmi-normal {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.bmi-over {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.bmi-obese {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.dashboard-lower {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(320px, 0.9fr);
+  gap: 20px;
+}
+
+.reminders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reminder-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg-panel-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.reminder-dot {
+  width: 10px;
+  height: 10px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.reminder-item p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+@media (max-width: 1080px) {
+  .dashboard-overview,
+  .dashboard-lower {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-overview {
+    flex-direction: column;
+  }
+
+  .dashboard-overview-meta {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .dashboard-stats,
+  .dashboard-profile,
+  .checkin-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .dashboard-stats,
+  .dashboard-profile,
+  .checkin-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-overview,
+  .stat-card,
+  .profile-card,
+  .checkin-card,
+  .chart-container,
+  .reminders-container {
+    padding: 20px;
+  }
+
+  .log-history-header {
+    padding: 20px;
+    flex-direction: column;
+  }
+
+  .log-history-table th,
+  .log-history-table td {
+    padding: 12px 16px;
+  }
+
+  .checkin-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

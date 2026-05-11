@@ -1,0 +1,126 @@
+/* FULL BACKGROUND */
+.login-container {
+  display: flex;
+  height: 100vh;
+
+  background: url("../assets/bg.png")
+              no-repeat center center/cover;
+
+  font-family: Arial, sans-serif;
+}
+
+/* LEFT SIDE */
+.left-panel {
+  flex: 1;
+  padding: 80px;
+  color: #2e5d34;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.left-panel h1 {
+  font-size: 48px;
+  font-weight: bold;
+}
+
+.left-panel p {
+  margin-top: 20px;
+  font-size: 18px;
+}
+
+/* RIGHT SIDE (WHITE CARD STYLE) */
+.right-panel {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  padding: 80px;
+
+  background: rgba(255, 255, 255, 0.9);
+}
+
+/* TITLE */
+.right-panel h2 {
+  color: #2e5d34;
+  margin-bottom: 20px;
+}
+
+/* LABELS */
+.right-panel label {
+  display: block;
+  margin-top: 10px;
+  color: #2e5d34;
+}
+
+/* INPUT FIELDS */
+.right-panel input {
+  width: 100%;
+  padding: 12px;
+
+  margin-top: 5px;
+  margin-bottom: 15px;
+
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+/* LOGIN BUTTON */
+.login-btn {
+  width: 100%;
+  padding: 12px;
+
+  background: linear-gradient(
+    to right,
+    #2e5d34,
+    #4CAF50
+  );
+
+  color: white;
+
+  border: none;
+  border-radius: 10px;
+
+  font-size: 16px;
+  cursor: pointer;
+
+  margin-top: 10px;
+}
+
+.login-btn:hover {
+  opacity: 0.9;
+}
+
+/* TEXT */
+.forgot {
+  margin-top: 10px;
+  color: #2e5d34;
+  font-size: 14px;
+}
+
+.or {
+  margin-top: 30px;
+  text-align: center;
+}
+
+/* SOCIAL BUTTONS */
+.social-login {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.social-btn {
+  padding: 10px 20px;
+
+  border: 1px solid #ccc;
+  background: white;
+
+  cursor: pointer;
+
+  border-radius: 8px;
+}

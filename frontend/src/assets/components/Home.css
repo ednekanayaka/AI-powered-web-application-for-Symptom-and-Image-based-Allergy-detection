@@ -1,0 +1,109 @@
+/* FULL PAGE */
+.home-container {
+  height: 100vh;
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(to right, #f5f9ff, #eef4ff);
+}
+
+/* NAVBAR */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 15px 40px;
+
+  border-bottom: 2px solid #007BFF;
+}
+
+/* MENU ICON */
+.menu-icon {
+  font-size: 22px;
+  cursor: pointer;
+}
+
+/* CENTER LINKS */
+.nav-links {
+  display: flex;
+  gap: 40px;
+  font-weight: bold;
+}
+
+.nav-links span {
+  cursor: pointer;
+}
+
+/* RIGHT BUTTONS */
+.nav-actions {
+  display: flex;
+  gap: 15px;
+}
+
+.nav-btn {
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: none;
+
+  background: linear-gradient(to right, #007BFF, #0056D2);
+  color: white;
+
+  cursor: pointer;
+}
+
+/* HERO SECTION */
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 60px;
+}
+
+/* LEFT SIDE */
+.hero-left {
+  max-width: 500px;
+}
+
+.hero-left h1 {
+  font-size: 40px;
+  margin-bottom: 20px;
+}
+
+.hero-left p {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 30px;
+}
+
+/* BUTTONS */
+.hero-buttons {
+  display: flex;
+  gap: 15px;
+}
+
+.primary-btn {
+  padding: 12px 25px;
+  border-radius: 25px;
+  border: none;
+
+  background: linear-gradient(to right, #007BFF, #0056D2);
+  color: white;
+
+  cursor: pointer;
+}
+
+.secondary-btn {
+  padding: 12px 25px;
+  border-radius: 25px;
+
+  border: 2px solid #007BFF;
+  background: transparent;
+  color: #007BFF;
+
+  cursor: pointer;
+}
+
+/* RIGHT IMAGE */
+.hero-right img {
+  width: 350px;
+}
