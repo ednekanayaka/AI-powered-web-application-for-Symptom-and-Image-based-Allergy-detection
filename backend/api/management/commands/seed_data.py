@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
+from collections import defaultdict
 
+from api.image_catalog import get_image_url_for_title
 from api.models import ExercisePlan, MealPlan, UserProfile
 
 
@@ -9,8 +11,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         self._seed_admin()
+        self._dedupe_meals()
+        self._dedupe_exercises()
         self._seed_meals()
         self._seed_exercises()
+        self._repair_random_image_sources()
 
     def _seed_admin(self):
         email = "admin@gmail.com"
@@ -44,13 +49,10 @@ class Command(BaseCommand):
         else:
             self.stdout.write(self.style.SUCCESS("Admin profile ready"))
 
+    def _default_image(self, name, kind="meal"):
+        return get_image_url_for_title(name, kind=kind)
+
     def _seed_meals(self):
-        if MealPlan.objects.exists():
-            self.stdout.write(self.style.WARNING("MealPlan data already exists; skipped"))
-            return
-
-        meals = []
-
         general = [
             ("general", "Breakfast", 1, "Oatmeal with Banana", 350, "12g"),
             ("general", "Lunch", 1, "Grilled Chicken Salad", 450, "35g"),
@@ -123,26 +125,28 @@ class Command(BaseCommand):
             ("lose", "Dinner", 7, "Grilled White Fish with Asparagus", 290, "30g"),
         ]
 
+        created = 0
+        updated = 0
         for goal_type, meal_type, day, name, calories, protein in general + muscle + lose:
-            meals.append(
-                MealPlan(
-                    goal_type=goal_type,
-                    meal_type=meal_type,
-                    day=day,
-                    name=name,
-                    calories=calories,
-                    protein=protein,
-                )
+            _, was_created = MealPlan.objects.update_or_create(
+                goal_type=goal_type,
+                meal_type=meal_type,
+                day=day,
+                defaults={
+                    "name": name,
+                    "calories": calories,
+                    "protein": protein,
+                    "image_url": self._default_image(name, "meal"),
+                },
             )
+            if was_created:
+                created += 1
+            else:
+                updated += 1
 
-        MealPlan.objects.bulk_create(meals)
-        self.stdout.write(self.style.SUCCESS(f"Seeded {len(meals)} MealPlan records"))
+        self.stdout.write(self.style.SUCCESS(f"Meal plans seeded. created={created}, updated={updated}"))
 
     def _seed_exercises(self):
-        if ExercisePlan.objects.exists():
-            self.stdout.write(self.style.WARNING("ExercisePlan data already exists; skipped"))
-            return
-
         exercises = [
             ("general", "30-Min Brisk Walk", "1 session / 30 mins"),
             ("general", "Bodyweight Squats", "3 sets of 15 reps"),
@@ -163,9 +167,93 @@ class Command(BaseCommand):
             ("lose", "Burpees", "4 sets of 15 reps"),
         ]
 
-        records = [
-            ExercisePlan(goal_type=goal_type, name=name, sets=sets)
-            for goal_type, name, sets in exercises
-        ]
-        ExercisePlan.objects.bulk_create(records)
-        self.stdout.write(self.style.SUCCESS(f"Seeded {len(records)} ExercisePlan records"))
+        created = 0
+        updated = 0
+        for goal_type, name, sets in exercises:
+            _, was_created = ExercisePlan.objects.update_or_create(
+                goal_type=goal_type,
+                name=name,
+                defaults={
+                    "sets": sets,
+                    "image_url": self._default_image(name, "exercise"),
+                },
+            )
+            if was_created:
+                created += 1
+            else:
+                updated += 1
+
+        self.stdout.write(self.style.SUCCESS(f"Exercise plans seeded. created={created}, updated={updated}"))
+
+    def _dedupe_meals(self):
+        grouped = defaultdict(list)
+        for meal in MealPlan.objects.all().order_by("id"):
+            key = (meal.goal_type, meal.day, (meal.meal_type or "").strip().lower())
+            grouped[key].append(meal)
+
+        deleted = 0
+        for rows in grouped.values():
+            if len(rows) <= 1:
+                continue
+
+            ranked = sorted(
+                rows,
+                key=lambda row: (0 if (row.image_url and str(row.image_url).strip()) else 1, row.id),
+            )
+
+            for duplicate in ranked[1:]:
+                duplicate.delete()
+                deleted += 1
+
+        if deleted:
+            self.stdout.write(self.style.WARNING(f"Deduplicated meal rows: removed={deleted}"))
+        else:
+            self.stdout.write(self.style.SUCCESS("No duplicate meal rows found"))
+
+    def _dedupe_exercises(self):
+        grouped = defaultdict(list)
+        for exercise in ExercisePlan.objects.all().order_by("id"):
+            key = (exercise.goal_type, (exercise.name or "").strip().lower())
+            grouped[key].append(exercise)
+
+        deleted = 0
+        for rows in grouped.values():
+            if len(rows) <= 1:
+                continue
+
+            ranked = sorted(
+                rows,
+                key=lambda row: (0 if (row.image_url and str(row.image_url).strip()) else 1, row.id),
+            )
+
+            for duplicate in ranked[1:]:
+                duplicate.delete()
+                deleted += 1
+
+        if deleted:
+            self.stdout.write(self.style.WARNING(f"Deduplicated exercise rows: removed={deleted}"))
+        else:
+            self.stdout.write(self.style.SUCCESS("No duplicate exercise rows found"))
+
+    def _repair_random_image_sources(self):
+        random_hosts = ("loremflickr.com", "source.unsplash.com", "picsum.photos")
+
+        meal_fixed = 0
+        for meal in MealPlan.objects.all():
+            current = (meal.image_url or "").strip().lower()
+            if (not current) or any(host in current for host in random_hosts):
+                meal.image_url = self._default_image(meal.name, "meal")
+                meal.save(update_fields=["image_url"])
+                meal_fixed += 1
+
+        exercise_fixed = 0
+        for exercise in ExercisePlan.objects.all():
+            current = (exercise.image_url or "").strip().lower()
+            if (not current) or any(host in current for host in random_hosts):
+                exercise.image_url = self._default_image(exercise.name, "exercise")
+                exercise.save(update_fields=["image_url"])
+                exercise_fixed += 1
+
+        self.stdout.write(self.style.SUCCESS(
+            f"Image URL repair complete. meals_fixed={meal_fixed}, exercises_fixed={exercise_fixed}"
+        ))

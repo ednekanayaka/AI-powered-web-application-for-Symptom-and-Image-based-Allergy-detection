@@ -32,12 +32,30 @@ new_meals = [
     {"goal_type": "general", "meal_type": "Dinner", "name": "Sweet Potato and Black Bean Tacos", "calories": 450, "protein": "18g"},
 ]
 
+goal_day_counters = {
+    "muscle": 1,
+    "lose": 1,
+    "general": 1,
+}
+
 for meal_data in new_meals:
-    # Check if exists to avoid duplicates
-    if not MealPlan.objects.filter(name=meal_data["name"]).exists():
+    goal = meal_data["goal_type"]
+    day = meal_data.get("day")
+    if not day:
+        day = goal_day_counters.get(goal, 1)
+        goal_day_counters[goal] = 1 if day >= 7 else day + 1
+
+    exists = MealPlan.objects.filter(
+        goal_type=goal,
+        meal_type=meal_data["meal_type"],
+        day=day,
+        name=meal_data["name"]
+    ).exists()
+    if not exists:
         MealPlan.objects.create(
-            goal_type=meal_data["goal_type"],
+            goal_type=goal,
             meal_type=meal_data["meal_type"],
+            day=day,
             name=meal_data["name"],
             calories=meal_data["calories"],
             protein=meal_data["protein"],

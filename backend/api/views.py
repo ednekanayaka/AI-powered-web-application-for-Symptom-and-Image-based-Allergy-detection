@@ -12,6 +12,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from ai_engine.predictor import predict_image_allergy, predict_symptom_allergy
+from .image_catalog import get_image_url_for_title
 from .models import HealthData, MealHistory, UserProfile
 
 
@@ -29,6 +30,28 @@ def parse_list(data):
             return [x.strip() for x in data.split(",") if x.strip()]
 
     return []
+
+
+def resolve_goal_type(goal_text):
+    goal = (goal_text or "").strip().lower()
+    if "muscle" in goal or "gain" in goal:
+        return "muscle"
+    if "lose" in goal or "weight" in goal or "cut" in goal:
+        return "lose"
+    return "general"
+
+
+MEAL_SLOT_ORDER = ["breakfast", "lunch", "dinner"]
+
+
+def normalize_meal_type(value):
+    return (value or "").strip().lower()
+
+
+def fallback_image_url(value, query, kind="meal"):
+    if value and str(value).strip():
+        return value
+    return get_image_url_for_title(query, kind=kind)
 
 
 @api_view(["POST"])
@@ -152,54 +175,73 @@ def meal_history(request):
 def diet_plan(request):
     try:
         profile = request.user.userprofile
-        goal = profile.fitness_goal.lower() if profile.fitness_goal else ""
+        goal = profile.fitness_goal if profile.fitness_goal else ""
         allergies = profile.allergies.lower() if profile.allergies else ""
         avoid = [a.strip() for a in allergies.split(",") if a.strip()]
     except Exception:
         goal = ""
         avoid = []
 
-    target_goal = "general"
-    if "muscle" in goal:
-        target_goal = "muscle"
-    elif "gain" in goal:
-        target_goal = "gain"
-    elif "lose" in goal or "weight" in goal or "cut" in goal:
-        target_goal = "lose"
+    target_goal = resolve_goal_type(goal)
 
     from .models import MealPlan
 
-    meal_records = MealPlan.objects.filter(goal_type=target_goal).order_by('day')
-    days_data = {}
+    meal_records = MealPlan.objects.filter(goal_type=target_goal).order_by("day", "id")
+
+    if not meal_records.exists() and target_goal == "muscle":
+        meal_records = MealPlan.objects.filter(goal_type="gain").order_by("day", "id")
+
+    if not meal_records.exists() and target_goal != "general":
+        meal_records = MealPlan.objects.filter(goal_type="general").order_by("day", "id")
+
+    day_slot_map = {}
 
     for meal in meal_records:
         day_num = meal.day
-        if day_num not in days_data:
-            days_data[day_num] = []
+        slot = normalize_meal_type(meal.meal_type)
+        if slot not in MEAL_SLOT_ORDER:
+            continue
 
-        meal_name_lower = meal.name.lower()
-        matched_allergies = []
-        for allergen in avoid:
-            if allergen and allergen in meal_name_lower:
-                matched_allergies.append(allergen)
+        if day_num not in day_slot_map:
+            day_slot_map[day_num] = {}
 
-        days_data[day_num].append({
-            "title": meal.meal_type,
-            "name": meal.name,
-            "calories": meal.calories,
-            "protein": meal.protein,
-            "image": meal.image_url,
-            "day": meal.day,
-            "is_safe": len(matched_allergies) == 0,
-            "matched_allergies": matched_allergies,
-        })
+        if slot in day_slot_map[day_num]:
+            existing = day_slot_map[day_num][slot]
+            if (not existing.image_url) and meal.image_url:
+                day_slot_map[day_num][slot] = meal
+            continue
+
+        day_slot_map[day_num][slot] = meal
 
     result_days = []
     for day in range(1, 8):
-        if day in days_data:
+        if day in day_slot_map:
+            meals = []
+            for slot in MEAL_SLOT_ORDER:
+                meal = day_slot_map[day].get(slot)
+                if not meal:
+                    continue
+
+                meal_name_lower = meal.name.lower()
+                matched_allergies = []
+                for allergen in avoid:
+                    if allergen and allergen in meal_name_lower:
+                        matched_allergies.append(allergen)
+
+                meals.append({
+                    "title": slot.capitalize(),
+                    "name": meal.name,
+                    "calories": meal.calories,
+                    "protein": meal.protein,
+                    "image": fallback_image_url(meal.image_url, meal.name, kind="meal"),
+                    "day": meal.day,
+                    "is_safe": len(matched_allergies) == 0,
+                    "matched_allergies": matched_allergies,
+                })
+
             result_days.append({
                 "day": day,
-                "meals": days_data[day]
+                "meals": meals
             })
 
     return Response({
@@ -337,7 +379,7 @@ def dashboard_data(request):
             "username": username,
             "bmi": data.bmi if data else bmi,
             "calories": getattr(data, "calories", None) or 1800,
-            "exercise": getattr(data, "exercise_minutes", None) or 60,
+            "exercise": getattr(data, "exercise_minutes", None),
             "chart_data": chart_data,
             "log_history": log_history,
             "fitness_goal": fitness_goal,
@@ -399,25 +441,26 @@ def user_settings(request):
 def exercise_plan(request):
     try:
         profile = request.user.userprofile
-        goal = profile.fitness_goal.lower() if profile.fitness_goal else ""
+        goal = profile.fitness_goal if profile.fitness_goal else ""
     except Exception:
         goal = ""
 
-    target_goal = "general"
-    if "muscle" in goal or "gain" in goal:
-        target_goal = "muscle"
-    elif "lose" in goal or "weight" in goal or "cut" in goal:
-        target_goal = "lose"
+    target_goal = resolve_goal_type(goal)
 
     from .models import ExercisePlan
 
-    exercise_records = ExercisePlan.objects.filter(goal_type=target_goal)
+    exercise_records = ExercisePlan.objects.filter(goal_type=target_goal).order_by("id")
+    if not exercise_records.exists() and target_goal == "muscle":
+        exercise_records = ExercisePlan.objects.filter(goal_type="gain").order_by("id")
+    if not exercise_records.exists() and target_goal != "general":
+        exercise_records = ExercisePlan.objects.filter(goal_type="general").order_by("id")
+
     exercises = []
     for exercise in exercise_records:
         exercises.append({
             "name": exercise.name,
             "sets": exercise.sets,
-            "image": exercise.image_url
+            "image": fallback_image_url(exercise.image_url, exercise.name, kind="exercise")
         })
 
     return Response({"exercises": exercises})
@@ -558,14 +601,15 @@ def admin_diet_list(request):
         } for plan in plans])
 
     data = request.data
+    meal_name = data.get("name", "")
     plan = MealPlan.objects.create(
         goal_type=data.get("goal_type", "general"),
         meal_type=data.get("meal_type", "Breakfast"),
         day=int(data.get("day", 1)),
-        name=data.get("name", ""),
+        name=meal_name,
         calories=int(data.get("calories", 0)),
         protein=data.get("protein", "0g"),
-        image_url=data.get("image_url", ""),
+        image_url=fallback_image_url(data.get("image_url", ""), meal_name, kind="meal"),
     )
     return Response({"id": plan.id, "status": "created"}, status=201)
 
@@ -594,7 +638,8 @@ def admin_diet_detail(request, plan_id):
     plan.name = data.get("name", plan.name)
     plan.calories = int(data.get("calories", plan.calories))
     plan.protein = data.get("protein", plan.protein)
-    plan.image_url = data.get("image_url", plan.image_url)
+    requested_image = data.get("image_url", plan.image_url)
+    plan.image_url = fallback_image_url(requested_image, plan.name, kind="meal")
     plan.save()
     return Response({"status": "updated"})
 
@@ -618,11 +663,12 @@ def admin_exercise_list(request):
         } for plan in plans])
 
     data = request.data
+    exercise_name = data.get("name", "")
     plan = ExercisePlan.objects.create(
         goal_type=data.get("goal_type", "general"),
-        name=data.get("name", ""),
+        name=exercise_name,
         sets=data.get("sets", ""),
-        image_url=data.get("image_url", ""),
+        image_url=fallback_image_url(data.get("image_url", ""), exercise_name, kind="exercise"),
     )
     return Response({"id": plan.id, "status": "created"}, status=201)
 
@@ -648,7 +694,8 @@ def admin_exercise_detail(request, plan_id):
     plan.goal_type = data.get("goal_type", plan.goal_type)
     plan.name = data.get("name", plan.name)
     plan.sets = data.get("sets", plan.sets)
-    plan.image_url = data.get("image_url", plan.image_url)
+    requested_image = data.get("image_url", plan.image_url)
+    plan.image_url = fallback_image_url(requested_image, plan.name, kind="exercise")
     plan.save()
     return Response({"status": "updated"})
 
