@@ -150,6 +150,10 @@
   gap: 20px;
 }
 
+.admin-stats-row {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .admin-panel-card {
   padding: 24px;
 }
@@ -314,6 +318,10 @@
 }
 
 @media (max-width: 760px) {
+  .admin-stats-row {
+    grid-template-columns: 1fr;
+  }
+
   .admin-dashboard-grid,
   .admin-status-grid,
   .admin-toolbar-actions,

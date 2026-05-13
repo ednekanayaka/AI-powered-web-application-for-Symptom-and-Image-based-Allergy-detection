@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import "./DietPlans.css";
 import { useNavigate } from "react-router-dom";
 
+const FALLBACK_MEAL_IMAGE = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80";
+
 function DietPlans() {
   const navigate = useNavigate();
   const [dietData, setDietData] = useState([]);
@@ -31,6 +33,11 @@ function DietPlans() {
   }, [navigate]);
 
   const currentDayMeals = dietData.find((d) => d.day === selectedDay)?.meals || [];
+
+  const handleImageError = (event) => {
+    event.currentTarget.onerror = null;
+    event.currentTarget.src = FALLBACK_MEAL_IMAGE;
+  };
 
   return (
     <div className="diet-page">
@@ -66,7 +73,7 @@ function DietPlans() {
           currentDayMeals.map((meal, index) => (
             <article key={index} className="meal-card">
               <div className="meal-media">
-                <img src={meal.image} alt={meal.name} />
+                <img src={meal.image || FALLBACK_MEAL_IMAGE} alt={meal.name} onError={handleImageError} />
               </div>
               <div className="meal-text">
                 <span className="meal-type-badge">{meal.title}</span>

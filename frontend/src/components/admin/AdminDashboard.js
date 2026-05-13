@@ -72,7 +72,7 @@ function AdminDashboard() {
           <p>Loading stats...</p>
         </div>
       ) : (
-        <section className="dashboard-stats">
+        <section className="dashboard-stats admin-stats-row">
           <article className="stat-card">
             <div className="stat-header">
               <div>

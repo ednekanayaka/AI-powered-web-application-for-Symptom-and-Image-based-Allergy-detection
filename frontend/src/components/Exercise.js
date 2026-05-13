@@ -3,9 +3,16 @@ import "./Exercise.css";
 import { useNavigate } from "react-router-dom";
 import { FaClock } from "react-icons/fa";
 
+const FALLBACK_EXERCISE_IMAGE = "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1200&q=80";
+
 function Exercise() {
   const navigate = useNavigate();
   const [exercises, setExercises] = useState([]);
+
+  const handleImageError = (event) => {
+    event.currentTarget.onerror = null;
+    event.currentTarget.src = FALLBACK_EXERCISE_IMAGE;
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("access");
@@ -44,7 +51,7 @@ function Exercise() {
           exercises.map((item, index) => (
             <article className="exercise-card" key={index}>
               <div className="exercise-card-image">
-                <img src={item.image} alt={item.name} />
+                <img src={item.image || FALLBACK_EXERCISE_IMAGE} alt={item.name} onError={handleImageError} />
               </div>
               <div className="exercise-card-content">
                 <h3>{item.name}</h3>

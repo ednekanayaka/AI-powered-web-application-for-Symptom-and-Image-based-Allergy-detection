@@ -7,7 +7,6 @@ import {
   AlertCircle,
   CheckCircle,
   ClipboardList,
-  Flame,
   Timer,
 } from "lucide-react";
 
@@ -106,7 +105,7 @@ function Dashboard() {
           <span className="page-kicker">Health summary</span>
           <h3>Keep your profile, progress, and next actions in one view.</h3>
           <p>
-            Review BMI, calories, exercise activity, recent logs, and reminders without leaving the dashboard.
+            Review BMI, exercise activity, recent logs, and reminders without leaving the dashboard.
           </p>
         </div>
         <div className="dashboard-overview-meta">
@@ -131,17 +130,6 @@ function Dashboard() {
             <span className="stat-icon"><Activity size={20} /></span>
           </div>
           <p className="stat-value">{dataAPI?.bmi || "Not set"}</p>
-        </article>
-
-        <article className="stat-card">
-          <div className="stat-header">
-            <div>
-              <span className="stat-label">Calories</span>
-              <h3>Latest intake</h3>
-            </div>
-            <span className="stat-icon"><Flame size={20} /></span>
-          </div>
-          <p className="stat-value">{dataAPI?.calories ? `${dataAPI.calories} kcal` : "--"}</p>
         </article>
 
         <article className="stat-card">

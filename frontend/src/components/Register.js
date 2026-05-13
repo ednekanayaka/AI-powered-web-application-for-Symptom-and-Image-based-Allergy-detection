@@ -8,6 +8,7 @@ import {
   Stethoscope,
   UserPlus,
 } from "lucide-react";
+import { clearStoredTokens } from "../utils/auth";
 
 function Register() {
   const navigate = useNavigate();
@@ -55,7 +56,8 @@ function Register() {
 
       if (response.ok) {
         alert("Account created successfully!");
-        navigate("/login");
+        clearStoredTokens();
+        navigate("/login?switch=1", { replace: true });
       } else {
         alert(data.error || "Registration failed");
       }

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./Login.css";
 
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   CalendarRange,
@@ -9,23 +9,37 @@ import {
   ScanSearch,
   ShieldCheck,
 } from "lucide-react";
-import { decodeToken } from "../utils/auth";
+import { clearStoredTokens, decodeToken, isTokenExpired } from "../utils/auth";
 
 function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const switchAccount = params.get("switch") === "1";
+
+    if (switchAccount) {
+      clearStoredTokens();
+      return;
+    }
+
     const token = localStorage.getItem("access");
     if (token) {
       const payload = decodeToken(token);
+      if (!payload || isTokenExpired(payload)) {
+        clearStoredTokens();
+        return;
+      }
+
       if (payload?.is_admin) navigate("/admin", { replace: true });
       else navigate("/dashboard", { replace: true });
     }
-  }, [navigate]);
+  }, [location.search, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -52,6 +66,11 @@ function Login() {
         localStorage.setItem("refresh", data.refresh);
 
         const payload = decodeToken(data.access);
+        if (!payload || isTokenExpired(payload)) {
+          clearStoredTokens();
+          alert("Session token is invalid. Please sign in again.");
+          return;
+        }
         if (payload?.is_admin) navigate("/admin");
         else navigate("/dashboard");
       } else {

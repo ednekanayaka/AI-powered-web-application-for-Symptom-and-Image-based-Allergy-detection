@@ -53,6 +53,7 @@ const workflow = [
 
 function Home() {
   const navigate = useNavigate();
+  const loginPath = "/login?switch=1";
 
   const scrollTo = (id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -74,7 +75,7 @@ function Home() {
         </nav>
 
         <div className="home-nav-actions">
-          <button type="button" className="app-button-secondary" onClick={() => navigate("/login")}>
+          <button type="button" className="app-button-secondary" onClick={() => navigate(loginPath)}>
             Sign in
           </button>
           <button type="button" className="app-button" onClick={() => navigate("/register")}>
@@ -223,7 +224,7 @@ function Home() {
             <span className="page-kicker">Start now</span>
             <h2>Sign in to review assessments, plans, and daily progress.</h2>
           </div>
-          <button type="button" className="app-button" onClick={() => navigate("/login")}>
+          <button type="button" className="app-button" onClick={() => navigate(loginPath)}>
             Open login
             <ArrowRight size={16} />
           </button>
@@ -251,7 +252,7 @@ function Home() {
             <h4>Navigate</h4>
             <button type="button" onClick={() => scrollTo("home")}>Overview</button>
             <button type="button" onClick={() => scrollTo("features")}>Features</button>
-            <button type="button" onClick={() => navigate("/login")}>Sign in</button>
+            <button type="button" onClick={() => navigate(loginPath)}>Sign in</button>
           </div>
         </div>
         <div className="home-footer-copy">© 2026 HealthAI. All rights reserved.</div>
